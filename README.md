@@ -1,4 +1,10 @@
-# blockchain-project-dapp
+# CryptoQuiz
+
+## Introduction
+
+**CryptoQuiz** is a Dapp for off-classroom quizzes. It is a new way to run a fair, transparent, yet secure quiz. Professor can open questions and let students to submit their answers. Once the question expire and answer is revealed, awards will be sent to students who had the correct answer.
+
+To keep their answers obscure and secret on the chain, we adopt public-key signing method with nonce. Only professor, who holds the private key of the question, can see or reveal the answer.
 
 ## Getting Started
 
