@@ -65,3 +65,6 @@ typings/
 
 # mac DS_Store
 .DS_Store
+
+# contrat build folder
+.build
