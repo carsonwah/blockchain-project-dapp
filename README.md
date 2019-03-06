@@ -34,3 +34,11 @@ npm run dev
 ### Tutorial
 
 - http://www.dappuniversity.com/articles/the-ultimate-ethereum-dapp-tutorial
+
+
+### Cryptography
+
+We use EC (Ellipis-Curve) cryptography to encrypt & decrypt message. We may use the following libraries:
+
+- https://github.com/bitchan/eccrypto
+- https://github.com/jpillora/eccjs
