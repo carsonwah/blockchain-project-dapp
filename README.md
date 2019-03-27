@@ -6,6 +6,8 @@
 
 To keep their answers obscure and secret on the chain, we adopt public-key signing method with nonce. Only professor, who holds the private key of the question, can see or reveal the answer.
 
+Tutorial: https://legacy.gitbook.com/book/carsonwah/dapp-tutorial/details
+
 ## Getting Started
 
 ### Install Dependencies
