@@ -1,10 +1,11 @@
 pragma solidity ^0.5.6;
 
+import "./CryptoQuizToken.sol";
+
 contract CryptoQuiz {
 
     struct Student {
         bool exist;
-        uint16 points;
     }
 
     struct Question {
@@ -33,6 +34,8 @@ contract CryptoQuiz {
         string hashedAnswers;  // Encrypted with Question.publicKey + nonce
     }
 
+    CryptoQuizToken tokenContract;
+
     // Professor
     address public professor;
 
@@ -46,9 +49,10 @@ contract CryptoQuiz {
 
     event QuestionRevealed(uint questionIndex, string answer);
 
-    constructor() public {
+    constructor(CryptoQuizToken _tokenContract) public {
         professor = msg.sender;
         questionsCount = 0;
+        tokenContract = _tokenContract;
     }
 
     modifier onlyProfessor {
@@ -62,7 +66,7 @@ contract CryptoQuiz {
     }
 
     function addStudent(address _studentAddress) public onlyProfessor {
-        students[_studentAddress] = Student(true, 0);
+        students[_studentAddress] = Student(true);
     }
 
     function postQuestion(bytes32 _questionId, string memory _questionStr, bytes32 _publicKey) public onlyProfessor {
@@ -114,6 +118,7 @@ contract CryptoQuiz {
      */
     function distributePoints(bytes32 _questionId, uint _questionIndex, bytes32[] memory decryptedAnswers) public onlyProfessor {
         Question storage question = questions[_questionIndex];
+
         require(question.questionId == _questionId, "Different question.");
         require(question.revealed, "Answer not yet revealed.");
         require(!question.pointsDistributed, "Points already distributed.");
@@ -123,8 +128,11 @@ contract CryptoQuiz {
         for (uint i = 0; i<question.answersCount; i++) {
             if (decryptedAnswers[i] == question.trueAnswer) {
                 // Answered correctly
+                // Get ethereum address of students
                 address studentAddress = question.answers[i].byStudent;
-                students[studentAddress].points += 1;
+
+                // Send token from prof address to student address
+                tokenContract.transfer(studentAddress, 1);
             }
         }
     }
