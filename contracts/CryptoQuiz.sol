@@ -1,4 +1,4 @@
-pragma solidity ^0.5.6;
+pragma solidity >=0.4.22 <0.6.0;
 
 import "./CryptoQuizToken.sol";
 

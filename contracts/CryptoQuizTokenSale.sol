@@ -1,99 +1,41 @@
 pragma solidity >=0.4.22 <0.6.0;
 
-interface token {
-    function transfer(address receiver, uint amount) external;
-}
+import "./CryptoQuizToken.sol";
 
 contract CryptoQuizTokenSale {
-    address public beneficiary;
-    uint public fundingGoal;
-    uint public amountRaised;
-    uint public deadline;
-    uint public price;
-    token public tokenReward;
-    mapping(address => uint256) public balanceOf;
-    bool fundingGoalReached = false;
-    bool crowdsaleClosed = false;
+    address payable admin;
+    CryptoQuizToken public tokenContract;
+    uint256 public tokenPrice;
+    uint256 public tokensSold;
 
-    event GoalReached(address recipient, uint totalAmountRaised);
-    event FundTransfer(address backer, uint amount, bool isContribution);
+    event Sell(address _buyer, uint256 _amount);
 
-    /**
-     * Constructor
-     *
-     * Setup the owner
-     */
-    constructor(
-        address ifSuccessfulSendTo,
-        uint fundingGoalInEthers,
-        uint durationInMinutes,
-        uint etherCostOfEachToken,
-        address addressOfTokenUsedAsReward
-    ) public {
-        beneficiary = ifSuccessfulSendTo;
-        fundingGoal = fundingGoalInEthers * 1 ether;
-        deadline = now + durationInMinutes * 1 minutes;
-        price = etherCostOfEachToken * 1 ether;
-        tokenReward = token(addressOfTokenUsedAsReward);
+    constructor(CryptoQuizToken _tokenContract, uint256 _tokenPrice) public {
+        admin = msg.sender;
+        tokenContract = _tokenContract;
+        tokenPrice = _tokenPrice;
     }
 
-    /**
-     * Fallback function
-     *
-     * The function without name is the default function that is called whenever anyone sends funds to a contract
-     */
-    function () payable external {
-        require(!crowdsaleClosed);
-        uint amount = msg.value;
-        balanceOf[msg.sender] += amount;
-        amountRaised += amount;
-        tokenReward.transfer(msg.sender, amount / price);
-       emit FundTransfer(msg.sender, amount, true);
+    function multiply(uint x, uint y) internal pure returns (uint z) {
+        require(y == 0 || (z = x * y) / y == x);
     }
 
-    modifier afterDeadline() { if (now >= deadline) _; }
+    function buyTokens(uint256 _numberOfTokens) public payable {
+        require(msg.value == multiply(_numberOfTokens, tokenPrice));
+        require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
+        require(tokenContract.transfer(msg.sender, _numberOfTokens));
 
-    /**
-     * Check if goal was reached
-     *
-     * Checks if the goal or time limit has been reached and ends the campaign
-     */
-    function checkGoalReached() public afterDeadline {
-        if (amountRaised >= fundingGoal){
-            fundingGoalReached = true;
-            emit GoalReached(beneficiary, amountRaised);
-        }
-        crowdsaleClosed = true;
+        tokensSold += _numberOfTokens;
+
+        emit Sell(msg.sender, _numberOfTokens);
     }
 
+    function endSale() public {
+        require(msg.sender == admin);
+        require(tokenContract.transfer(admin, tokenContract.balanceOf(address(this))));
 
-    /**
-     * Withdraw the funds
-     *
-     * Checks to see if goal or time limit has been reached, and if so, and the funding goal was reached,
-     * sends the entire amount to the beneficiary. If goal was not reached, each contributor can withdraw
-     * the amount they contributed.
-     */
-    function safeWithdrawal() public afterDeadline {
-        if (!fundingGoalReached) {
-            uint amount = balanceOf[msg.sender];
-            balanceOf[msg.sender] = 0;
-            if (amount > 0) {
-                if (msg.sender.send(amount)) {
-                   emit FundTransfer(msg.sender, amount, false);
-                } else {
-                    balanceOf[msg.sender] = amount;
-                }
-            }
-        }
-
-        if (fundingGoalReached && beneficiary == msg.sender) {
-            if (msg.sender.send(amountRaised)) {
-               emit FundTransfer(beneficiary, amountRaised, false);
-            } else {
-                //If we fail to send the funds to beneficiary, unlock funders balance
-                fundingGoalReached = false;
-            }
-        }
+        // UPDATE: Let's not destroy the contract here
+        // Just transfer the balance to the admin
+        admin.transfer(address(this).balance);
     }
 }
