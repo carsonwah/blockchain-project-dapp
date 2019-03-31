@@ -27,7 +27,7 @@ contract CryptoQuizToken {
     }
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        require(balanceOf[msg.sender] >= _value);
+        require(balanceOf[msg.sender] >= _value, 'balanceOf[msg.sender] failed');
 
         balanceOf[msg.sender] -= _value;
         balanceOf[_to] += _value;
@@ -45,17 +45,17 @@ contract CryptoQuizToken {
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        require(_value <= balanceOf[_from]);
-        require(_value <= allowance[_from][msg.sender]);
+    // function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+    //     require(_value <= balanceOf[_from]);
+    //     require(_value <= allowance[_from][msg.sender]);
 
-        balanceOf[_from] -= _value;
-        balanceOf[_to] += _value;
+    //     balanceOf[_from] -= _value;
+    //     balanceOf[_to] += _value;
 
-        allowance[_from][msg.sender] -= _value;
+    //     allowance[_from][msg.sender] -= _value;
 
-        emit Transfer(_from, _to, _value);
+    //     emit Transfer(_from, _to, _value);
 
-        return true;
-    }
+    //     return true;
+    // }
 }
