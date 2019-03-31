@@ -49,10 +49,10 @@ contract CryptoQuiz {
 
     event QuestionRevealed(uint questionIndex, string answer);
 
-    constructor(CryptoQuizToken _tokenContract) public {
+    constructor(address _tokenContract) public {
         professor = msg.sender;
         questionsCount = 0;
-        tokenContract = _tokenContract;
+        tokenContract = CryptoQuizToken(_tokenContract);
     }
 
     modifier onlyProfessor {
