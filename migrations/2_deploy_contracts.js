@@ -6,7 +6,7 @@ module.exports = async function(deployer, network, accounts) {
   const tokensSupply = 1000000;
   const tokenForSale = 500000;
   // const tokenPrice = 1000000000000000;
-  const tokenPrice = 1e16.toString();
+  const tokenPrice = 1e16.toString();  // 0.01 ether
   // const tokenPrice = 1;  // 0.01 eth
   const deployAccountAddress = accounts[0];
 
