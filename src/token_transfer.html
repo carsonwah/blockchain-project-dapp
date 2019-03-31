@@ -1,0 +1,54 @@
+<!-- Reference: https://github.com/dappuniversity/token_sale -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ICO Token Sale</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container" style="width: 650px;">
+      <div class="row">
+        <div class="col-lg-12">
+            <h1 class="text-center">Manage CryptoQuizToken</h1>
+            <hr/>
+            <br/>
+        </div>
+        <div id="loader">
+          <p class="text-center">Loading...</p>
+        </div>
+        <div id="content" class="text-center" style="display: none;">
+          <p>
+            You currently have <span class="dapp-balance"></span>&nbsp;tokens.
+          </p>
+          <br/>
+          <form onSubmit="App.transferTokens(); return false;" role="form">
+            <div class="form-group">
+              <div class="input-group">
+                <input id="toAddress" class="form-control input-lg" type="string" name="number" placeholder="To Address">
+                </input>
+              </div>
+              <div class="input-group">
+                <input id="numberOfTokens" class="form-control input-lg" type="number" name="number" value="1" min="1" pattern="[0-9]">
+                </input>
+                <span class="input-group-btn">
+                  <button type="submit" class="btn btn-primary btn-lg">Transfer Tokens</button>
+                </span>
+              </div>
+            </div>
+          </form>
+          <p id="accountAddress"></p>
+        </div>
+      </div>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app_token_transfer.js"></script>
+  </body>
+</html>

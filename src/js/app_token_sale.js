@@ -6,7 +6,7 @@ App = {
   loading: false,
   tokenPrice: 1000000000000000,
   tokensSold: 0,
-  tokensAvailable: 750000,
+  tokensAvailable: 500000,
 
   init: function() {
     console.log("App initialized...")
@@ -98,6 +98,7 @@ App = {
 
       // Load token contract
       App.contracts.CryptoQuizToken.deployed().then(function(instance) {
+        // instance.balanceOf(['0x3F710E45FC7EF603E3301CD6E3350F925026f64B']).then((result) => console.log(result.toNumber()));
         cryptoQuizTokenInstance = instance;
         return cryptoQuizTokenInstance.balanceOf(App.account);
       }).then(function(balance) {
@@ -113,17 +114,25 @@ App = {
     $('#content').hide();
     $('#loader').show();
     var numberOfTokens = $('#numberOfTokens').val();
+    console.log('numberOfTokens', numberOfTokens);
+    // var ethValue = web3.utils.toWei(parseInt(numberOfTokens)*0.01);
+    var ethValue = numberOfTokens * App.tokenPrice;
+    console.log('msg.value', ethValue);
     App.contracts.CryptoQuizTokenSale.deployed().then(function(instance) {
       return instance.buyTokens(numberOfTokens, {
         from: App.account,
-        value: numberOfTokens * App.tokenPrice,
+        value: ethValue.toString(),
         gas: 500000 // Gas limit
       });
     }).then(function(result) {
-      console.log("Tokens bought...")
+      console.log("Tokens bought...", result);
       $('form').trigger('reset') // reset number of tokens in form
       // Wait for Sell event
-    });
+    }).catch(function(err) {
+      console.log('buyTokens() failed', err);
+      $('#content').show();
+      $('#loader').hide();
+    })
   }
 }
 
