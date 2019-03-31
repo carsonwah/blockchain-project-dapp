@@ -42,5 +42,5 @@ npm run dev
 
 We use EC (Ellipis-Curve) cryptography to encrypt & decrypt message. We may use the following libraries:
 
-- https://github.com/bitchan/eccrypto
-- https://github.com/jpillora/eccjs
+- **ECIES** from https://github.com/bitchan/eccrypto
+- (Backup: https://github.com/jpillora/eccjs)
