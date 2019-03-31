@@ -13,7 +13,7 @@ contract CryptoQuizTokenSale {
     constructor(address _tokenContract, uint256 _tokenPrice) public {
         admin = msg.sender;
         tokenContract = CryptoQuizToken(_tokenContract);
-        tokenPrice = _tokenPrice * 1e16;
+        tokenPrice = _tokenPrice;
     }
 
     function multiply(uint x, uint y) internal pure returns (uint z) {
