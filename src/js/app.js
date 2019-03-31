@@ -3,6 +3,7 @@ App = {
   contracts: {},
 
   init: async function() {
+    console.log("App initalization");
     return await App.initWeb3();
   },
 
@@ -20,35 +21,48 @@ App = {
   },
 
   initContract: function() {
-    $.getJSON("CryptoQuiz.json", function(quiz) {
+    $.getJSON("CryptoQuiz.json", function(CryptoQuiz) {
       // Instantiate a new truffle contract from the artifact
-      App.contracts.Election = TruffleContract(quiz);
+      App.contracts.CryptoQuiz = TruffleContract(CryptoQuiz);
       // Connect provider to interact with contract
-      App.contracts.Election.setProvider(App.web3Provider);
-      return;
+      App.contracts.CryptoQuiz.setProvider(App.web3Provider);
+      return App.render();
     });
   },
 
-  loadAccountInfo: function() {
+  render: function() {
+    var CryptoQuizInstance;
+    var loader = $("#loader");
+    var content = $("#content");
+
+    loader.show();
+    content.hide();
+
+    // Load account data
     web3.eth.getCoinbase(function(err, account) {
       if (err === null) {
         App.account = account;
         $("#accountAddress").html("Your Account: " + account);
       }
     });
-  },
 
-  loadQuiz: function() {
+    // Load contract data
+    App.contracts.CryptoQuiz.deployed().then(function(instance) {
+      CryptoQuizInstance = instance;
+      return CryptoQuizInstance.candidatesCount();
+    }).then(function(candidatesCount) {
 
-  },
 
-  answerQuiz: function() {
 
-  },
-
-  releaseAnswer: function() {
-
+      loader.hide();
+      content.show();
+    }).catch(function(error) {
+      console.warn(error);
+    });
   }
+
+
+  
 
 };
 
