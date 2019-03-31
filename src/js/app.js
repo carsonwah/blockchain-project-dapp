@@ -46,13 +46,20 @@ App = {
       }
     });
 
-    // Load contract data
+    // Load Questions
     App.contracts.CryptoQuiz.deployed().then(function(instance) {
       CryptoQuizInstance = instance;
-      return CryptoQuizInstance.candidatesCount();
-    }).then(function(candidatesCount) {
-
-
+      return CryptoQuizInstance.questionsCount();
+    }).then(function(questionsCount) {
+      var questionsTable = $("#questionsTable");
+      if (questionsCount <= 0) {
+        questionsTable.html("No questions yet!");
+      }
+      for (var i = 1;  i<= questionsCount; i++) {
+        CryptoQuizInstance.questions(i).then(function (question) {
+          console.log(question);
+        });
+      }
 
       loader.hide();
       content.show();

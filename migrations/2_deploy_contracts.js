@@ -36,7 +36,7 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(CryptoQuizToken, tokensSupply);
   await deployer.deploy(CryptoQuiz, CryptoQuizToken.address);
   await deployer.deploy(CryptoQuizTokenSale, CryptoQuizToken.address, tokenPrice)
-  // .then(() => {
+  .then(() => {
   CryptoQuizToken.deployed()
   .then(function(instance) {
     console.log(`Sending ${tokenForSale} from ${deployAccountAddress}(owner) to ${CryptoQuizTokenSale.address}(tokenSale)`);
@@ -48,5 +48,5 @@ module.exports = async function(deployer, network, accounts) {
         console.log('Failed', err);
       })
   });
-  // });
+  });
 };

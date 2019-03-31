@@ -44,7 +44,7 @@ contract CryptoQuiz {
     mapping(address => Student) public students;
 
     // Questions list
-    uint questionsCount;
+    uint public questionsCount;
     mapping(uint => Question) public questions;
 
     event QuestionRevealed(uint questionIndex, string answer);
