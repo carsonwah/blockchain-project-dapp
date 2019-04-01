@@ -178,6 +178,7 @@ App = {
           } else {
             answerList.push(false);
           }
+          console.log(answerList);
         }
         // Distribute Points
         CryptoQuizInstance.distributePoints(questionIndex, questionIndex, answerList).then(function(result) {
@@ -194,6 +195,7 @@ App = {
         CryptoQuizInstance = instance;
         return CryptoQuizInstance.questions(questionIndex);
       }).then(function(question) {
+        console.log(question);
         let modal = $('#details-modal');
         modal.find('#modal-private-key').val(question[4]);
         modal.find('#modal-answer').val(question[5]);
@@ -208,6 +210,11 @@ App = {
           modal.find('#btn-distribute').click(function() {
             App.distributePt(questionIndex, question[4]);
           })
+        } else {
+          let btnGroup = modal.find('#btn-group');
+          let closeBtn = '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+          btnGroup.empty();
+          btnGroup.append(closeBtn);
         }
       }).catch(function(error) {
         console.log(error);
