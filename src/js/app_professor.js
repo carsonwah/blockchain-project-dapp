@@ -88,7 +88,7 @@ App = {
 
     addStudent: function() {
       var studentAddr = $("#student-addr");
-      var alert = $("#alert");
+      var alert = $("#alert-student");
       // Add student
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
@@ -106,20 +106,24 @@ App = {
     postQuestion: function() {
       var newQuestion = $("#new-question");
       var questionList = $("#questions-list");
+      var alert = $("#alert-question");
       var questionId = web3.fromDecimal(App.nextQuestionId);
       var questionStr = newQuestion.val();
-      var publicKey = "abcde";
+
+      var privateKey = eccrypto.generatePrivate();
+      var publicKey = eccrypto.getPublic(privateKey);
 
       // Post new question
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
-        return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey);
+        return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey.toString());
       }).then(function(result) {
         var newQuestionId = web3.toDecimal(questionId);
-        console.log(questionId);
         App.nextQuestionId++;
         var questionTemplate = '<tr><td style="overflow: scroll;">'+newQuestionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target="#reveal-answer-modal" data-id="'+newQuestionId+'">Reveal Answer</button></td></tr>';
         questionList.append(questionTemplate);
+        var addQuestionAlert = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Success!</strong> Please SAVE your Private Key for Question ID '+newQuestionId+' : '+web3.fromAscii(privateKey.toString())+'</div>'
+        alert.append(addQuestionAlert);
         newQuestion.val('');
         console.log("New Question Posted");
       }).catch(function(error) {
@@ -137,7 +141,6 @@ App = {
         // In this example we make the questionId == questionIndex
         return CryptoQuizInstance.revealAnswer(questionId, questionIndex, privateKey, answer);
       }).then(function(result) {
-        let modal = $("#reveal-answer-modal");
         location.reload();
       }).catch(function(error) {
         console.log(error);
