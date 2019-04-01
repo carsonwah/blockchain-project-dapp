@@ -111,6 +111,7 @@ App = {
       var privateKey = eccrypto.generatePrivate();
       var publicKey = eccrypto.getPublic(privateKey);
       var publicKey = publicKey.toString('base64');
+      var privateKey = privateKey.toString('base64');
 
       // Post new question
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
@@ -122,7 +123,7 @@ App = {
         App.nextQuestionId++;
         var questionTemplate = '<tr><td style="overflow: scroll;">'+newQuestionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target="#reveal-answer-modal" data-id="'+newQuestionId+'">Reveal Answer</button></td></tr>';
         questionList.append(questionTemplate);
-        var addQuestionAlert = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Success!</strong> Please SAVE your Private Key for Question ID '+newQuestionId+' : '+publicKey+'</div>'
+        var addQuestionAlert = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Success!</strong> Please SAVE your Private Key for Question ID '+newQuestionId+' : '+privateKey+'</div>'
         alert.append(addQuestionAlert);
         newQuestion.val('');
         console.log("New Question Posted");
@@ -155,6 +156,7 @@ App = {
         console.log(question);
         console.log(question[2]);
         var answerCount = question[2].toNumber();
+        var answerList = [];
         for (var i =0 ; i < answerCount; i++) {
           const answer = await CryptoQuizInstance.getAnswerForQuestion(questionIndex, i);
           const studentAddr = answer[0];
@@ -165,9 +167,25 @@ App = {
           encryptednswerRecovered.ephemPublicKey = Buffer.from(encryptednswerRecovered.ephemPublicKey);
           encryptednswerRecovered.iv = Buffer.from(encryptednswerRecovered.iv);
           encryptednswerRecovered.mac = Buffer.from(encryptednswerRecovered.mac);
-          // get prof private key
-          console.log(privateKey);
+          // Get private key from user input
+          const privateKeyRecovered = Buffer.from(privateKey, 'base64');
+          const decryptedAnswer = await eccrypto.decrypt(privateKeyRecovered, encryptednswerRecovered);
+          const decryptedAnswerRecovered = decryptedAnswer.toString();
+          const decryptedAns = decryptedAnswerRecovered.split('//');
+          const correctAns = question[5];
+          if (correctAns === decryptedAns[0]) {
+            answerList.push(true);
+          } else {
+            answerList.push(false);
+          }
         }
+        // Distribute Points
+        CryptoQuizInstance.distributePoints(questionIndex, questionIndex, answerList).then(function(result) {
+          console.log(result);
+          location.reload();
+        }).catch(function(error) {
+          console.log(error);
+        });
       });
     },
 
