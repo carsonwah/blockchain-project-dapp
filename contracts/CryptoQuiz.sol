@@ -40,7 +40,7 @@ contract CryptoQuiz {
     address public professor;
 
     // Students
-    uint public studentsCount;
+    // uint public studentsCount;
     mapping(address => Student) public students;
 
     // Questions list
