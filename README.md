@@ -35,7 +35,7 @@ npm run dev
 
 ### Tutorial
 
-- http://www.dappuniversity.com/articles/the-ultimate-ethereum-dapp-tutorial
+- https://carsonwah.gitbooks.io/dapp-tutorial/content/
 
 
 ### Cryptography
