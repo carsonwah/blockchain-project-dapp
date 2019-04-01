@@ -89,24 +89,34 @@ App = {
     var randomNumber = parseInt((Math.random() * 100), 10).toString();
     var finalAnswer = answerStr+"//"+randomNumber;
     console.log("question: "+ question);
-    var publicKey = question[3];
+    var publicKey = Buffer.from(question[3], 'base64');
     console.log(publicKey);
     console.log(finalAnswer);
     console.log("public key: "+publicKey);
 
-    var publicKey = web3.toUtf8(question[3]);
-    console.log(publicKey);
-    var publicKey = Buffer.from(publicKey);
-    console.log(publicKey);
-
-    // var privateKeyA = eccrypto.generatePrivate();
-    // publicKey = eccrypto.getPublic(privateKeyA);
-    // console.log(privateKeyA);
-    // console.log(publicKey);
-
 
     const encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
     const encryptedJSONString = JSON.stringify(encrypted);
+
+    // const publicKey = eccrypto.getPublic(privateKey);
+    //   const publicKeyBase64 = publicKey.toString('base64');
+    //   // Store in blockchain
+    //   // Student encrypt
+    //   const publicKeyRecovered = Buffer.from(publicKeyBase64, 'base64');
+    //   const encryptedAnswer = await eccrypto.encrypt(publicKeyRecovered, Buffer.from(finalAnswer));
+    //   const encryptedAnswerString = JSON.stringify(encryptedAnswer);
+    //   // Store in blockchain
+    //   // Professor decrypt
+    //   const encryptednswerRecovered = JSON.parse(encryptedAnswerString);
+    //   encryptednswerRecovered.ciphertext = Buffer.from(encryptednswerRecovered.ciphertext);
+    //   encryptednswerRecovered.ephemPublicKey = Buffer.from(encryptednswerRecovered.ephemPublicKey);
+    //   encryptednswerRecovered.iv = Buffer.from(encryptednswerRecovered.iv);
+    //   encryptednswerRecovered.mac = Buffer.from(encryptednswerRecovered.mac);
+    //   // Get private key from user input
+    //   const privateKey = Buffer.from(publicKeyBase64, 'base64');
+    //   const decryptedAnswer = await eccrypto.decrypt(privateKey, encryptednswerRecovered);
+    //   const decryptedAnswerRecovered = decryptedAnswer.toString();
+    //   console.log('decryptedAnswerRecovered', decryptedAnswerRecovered);
 
 
     // // // <TEMP>
@@ -140,14 +150,13 @@ App = {
 
     App.contracts.CryptoQuiz.deployed().then(function(instance) {
       CryptoQuizInstance = instance;
-      CryptoQuizInstance.submitAnswer(questionId,questionIndex,encryptedJSONString);}
-      .then(result => {
+      CryptoQuizInstance.submitAnswer(questionId,questionIndex,encryptedJSONString);
+    }).then(result => {
         console.log(result);
       })
       .catch(err => {
         console.warn(err);
-      })
-    );
+      });
   }
 
   

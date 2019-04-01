@@ -110,7 +110,7 @@ App = {
 
       var privateKey = eccrypto.generatePrivate();
       var publicKey = eccrypto.getPublic(privateKey);
-      var publicKey = web3.fromUtf8(publicKey.toString());
+      var publicKey = publicKey.toString('base64');
 
       // Post new question
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
@@ -131,7 +131,7 @@ App = {
       });
     },
 
-    revealAnswer: function(questionIndex, privateKey, ans) {
+    revealAnswer: function(questionIndex, privateKey, answer) {
       // Reveal Answer
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
@@ -139,7 +139,7 @@ App = {
         // In this example we make the questionId == questionIndex
         return CryptoQuizInstance.revealAnswer(questionId, questionIndex, privateKey, answer);
       }).then(function(result) {
-        //location.reload();
+        location.reload();
       }).catch(function(error) {
         console.log(error);
       })
@@ -153,8 +153,7 @@ App = {
         return CryptoQuizInstance.questions(questionIndex);
       }).then(function(question) {
         console.log(question);
-        console.log(question[2].toString());
-        // console.log(question[])
+        console.log(question[2]);
       });
     },
 
@@ -164,8 +163,8 @@ App = {
         return CryptoQuizInstance.questions(questionIndex);
       }).then(function(question) {
         let modal = $('#details-modal');
-        modal.find('#modal-private-key').val(web3.toUtf8(question[4]));
-        modal.find('#modal-answer').val(web3.toUtf8(question[5]));
+        modal.find('#modal-private-key').val(question[4]);
+        modal.find('#modal-answer').val(question[5]);
         modal.find('#numAns').html("Number of Answer: "+question[2].toNumber());
         // Check points distributed
         if (!question[7]) {
