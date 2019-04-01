@@ -1,6 +1,7 @@
 App = {
   web3Provider: null,
   contracts: {},
+  questions: [],
 
   init: async function() {
     console.log("App initalization");
@@ -50,21 +51,24 @@ App = {
     App.contracts.CryptoQuiz.deployed().then(function(instance) {
       CryptoQuizInstance = instance;
       return CryptoQuizInstance.questionsCount();
-    }).then(function(questionsCount) {
+    }).then(async function(questionsCount) {
       var questionsTable = $("#questionsTable");
       if (questionsCount <= 0) {
         questionsTable.html("No questions yet!");
       }
-      for (var i = 1;  i< questionsCount; i++) 
+      for (let i = 0;  i< questionsCount; i++) 
       {
-        CryptoQuizInstance.questions(i).then(function (question) {
-          var questionList = $("#questions-list");
-          var questionId = web3.toAscii(question[0]);
-          var questionStr = question[1];
-          var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
-          var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+questionId+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-question" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.postQuestion()">Submit</button></span></div></div></div></div></div>';
-          questionList.append(questionBoxTemplate);
-        });
+        const question = await CryptoQuizInstance.questions(i);
+        // .then(function (question) {
+        var questionList = $("#questions-list");
+        var questionId = web3.toUtf8(question[0]);
+        var questionStr = question[1];
+        var questionPk = question[2];
+        var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
+        var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+questionId+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-answer-'+questionId+'" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.submitAnswer('+i+')">Submit</button></span></div></div></div></div></div>';
+        questionList.append(questionBoxTemplate);
+        App.questions.push(question);
+        // });
       }
 
 
@@ -73,8 +77,65 @@ App = {
     }).catch(function(error) {
       console.warn(error);
     });
-  }
+  },
 
+  // Submit answer
+  submitAnswer: async function(questionIndex)
+  {
+    var question = App.questions[questionIndex];
+    var questionId = web3.toUtf8(question[0]);
+    var newAnswer = $("#new-answer-"+questionId);
+    var answerStr = newAnswer.val();
+
+    /* Encrypt Answer */
+    var randomNumber = parseInt((Math.random() * 100), 10).toString();
+    var finalAnswer = answerStr+"//"+randomNumber;
+    var publicKey = question[2];
+    console.log(finalAnswer);
+
+    const encrypted = await eccrypto.enrypt(publicKey, Buffer.from(finalAnswer));
+    const encryptedJSONString = Json.stringify(encrypted);
+
+
+    // // <TEMP>
+    // var privateKeyA = eccrypto.generatePrivate();
+    // publicKey = eccrypto.getPublic(privateKeyA);
+    // console.log('privateKeyA', web3.fromAscii(privateKeyA.toString()));
+    // console.log('privateKeyA', privateKeyA);
+    // console.log('publicKey', publicKey.toString());
+    // // </TEMP>
+
+    // // Encrypt
+    // const encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
+    // console.log('encrypted', encrypted);
+    // const encryptedJSONString = JSON.stringify(encrypted);
+    // console.log('encryptedJSONString', encryptedJSONString);
+
+    // // Decrypt
+    // const encryptedRecovered = JSON.parse(encryptedJSONString);
+    // encryptedRecovered.ciphertext = Buffer.from(encryptedRecovered.ciphertext);
+    // encryptedRecovered.ephemPublicKey = Buffer.from(encryptedRecovered.ephemPublicKey);
+    // encryptedRecovered.iv = Buffer.from(encryptedRecovered.iv);
+    // encryptedRecovered.mac = Buffer.from(encryptedRecovered.mac);
+    // console.log('encryptedRecovered', encryptedRecovered);
+    // const decrypted = await eccrypto.decrypt(privateKeyA, encryptedRecovered);
+    // console.log('decrypted', decrypted);
+    // const decryptedRecovered = decrypted.toString();
+    // console.log('decryptedRecovered', decryptedRecovered);
+    // return;
+
+    // QuestionId == questionIndex in our example
+
+    App.contracts.CryptoQuiz.deployed().then(function(instance) {
+      .then(result => {
+        instance.submitAnswer(questionId,questionIndex,encryptedJSONString);
+        console.log(result);
+      })
+      .catch(err => {
+        console.warn(err);
+      })
+    });
+  }
 
   
 
