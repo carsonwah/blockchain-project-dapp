@@ -57,15 +57,15 @@ App = {
         }
         return CryptoQuizInstance.questionsCount();
       }).then(function(questionsCount) {
-        
-        for(var i = 0; i <= questionsCount; i++) {
+        App.questionIdCount = questionsCount.toNumber();
+        for(var i = 0; i < questionsCount; i++) {
           CryptoQuizInstance.questions(i).then(function(question) {
             var questionList = $("#questions-list");
-            var questionId = question[0];
+            var questionId = web3.toAscii(question[0]);
             var questionStr = question[1];
             var publicKey = question[2];
             console.log("publicKey: " + publicKey);
-            var questionTemplate = '<tr><td style="overflow: scroll;">'+questionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" onclick="App.revealAnswer()">Reveal Answer</button></td></tr>';
+            var questionTemplate = '<tr><td style="overflow: scroll;">'+questionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target=".reveal-answer-modal">Reveal Answer</button></td></tr>';
             questionList.append(questionTemplate);
           });
         }
@@ -78,14 +78,14 @@ App = {
 
     addStudent: function() {
       var studentAddr = $("#student-addr");
-      var studentList = $("#student-list");
+      var alert = $("#alert");
       // Add student
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
         return CryptoQuizInstance.addStudent(studentAddr.val());
       }).then(function(result) {
-        var studentTemplate = '<li class="list-group-item">'+studentAddr.val()+'</li>';
-        studentList.append(studentTemplate);
+        var addStudentAlert = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Success!</strong> '+studentAddr.val()+' Added</div>'
+        alert.append(addStudentAlert);
         studentAddr.val('');
         console.log("New Student Added");
       }).catch(function(error) {
@@ -96,8 +96,7 @@ App = {
     postQuestion: function() {
       var newQuestion = $("#new-question");
       var questionList = $("#questions-list");
-
-      var questionId = "1";
+      var questionId = web3.fromAscii(""+(++App.questionIdCount));
       var questionStr = newQuestion.val();
       var publicKey = "abcde";
 
@@ -106,7 +105,7 @@ App = {
         CryptoQuizInstance = instance;
         return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey);
       }).then(function(result) {
-        var questionTemplate = '<tr><td style="overflow: scroll;">'+questionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" onclick="App.revealAnswer()">Reveal Answer</button></td></tr>';
+        var questionTemplate = '<tr><td style="overflow: scroll;">'+App.questionIdCount+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target=".reveal-answer-modal">Reveal Answer</button></td></tr>';
         questionList.append(questionTemplate);
         newQuestion.val('');
         console.log("New Question Posted");
@@ -117,6 +116,7 @@ App = {
 
     revealAnswer: function() {
       console.log("revealAnswer()");
+
     }
   };
   
