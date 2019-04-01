@@ -144,6 +144,8 @@ contract CryptoQuiz {
                 tokenContract.transfer(studentAddress, 1);
             }
         }
+
+        question.pointsDistributed = true;
     }
 
 }
