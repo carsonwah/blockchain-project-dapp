@@ -33,10 +33,6 @@ npm run dev
 
 ## Resources
 
-### Tutorial
-
-- https://carsonwah.gitbooks.io/dapp-tutorial/content/
-
 
 ### Cryptography
 
