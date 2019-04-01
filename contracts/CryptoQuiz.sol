@@ -31,7 +31,7 @@ contract CryptoQuiz {
 
     struct Answer {
         address byStudent;
-        string hashedAnswers;  // Encrypted with Question.publicKey + nonce
+        string encryptedAnswer;  // Encrypted with Question.publicKey + nonce
     }
 
     CryptoQuizToken tokenContract;
@@ -99,6 +99,14 @@ contract CryptoQuiz {
 
         // Indicate already answered
         question.answeredStudents[msg.sender] = true;
+    }
+
+    /**
+        getAnswerForQuestion: Retrieve an answer in a question
+        (Because mappings in struct are not retrievable)
+     */
+    function getAnswerForQuestion(uint _questionIndex, uint _answerIndex) public view returns (address, string memory) {
+        return (questions[_questionIndex].answers[_answerIndex].byStudent, questions[_questionIndex].answers[_answerIndex].encryptedAnswer);
     }
 
     function revealAnswer(bytes32 _questionId, uint _questionIndex, string memory _privateKey, string memory _trueAnswer) public onlyProfessor {
