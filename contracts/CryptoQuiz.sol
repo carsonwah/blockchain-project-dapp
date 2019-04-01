@@ -19,10 +19,10 @@ contract CryptoQuiz {
         mapping(address => bool) answeredStudents;
 
         // Secrets of answer
-        bytes32 publicKey;  // 256-bit ECIES key (secp256k1), For encrypting answer
+        string publicKey;  // ECIES key (Reference: secp256k1), For encrypting answer
         // uint32 deadline;  // Deadline. (Should be large enough because it is compared with block.timestamp)
-        bytes32 privateKey;  // Not exist until revealed
-        bytes32 trueAnswer;  // Not exist until revealed
+        string privateKey;  // Not exist until revealed
+        string trueAnswer;  // Not exist until revealed
 
         // Status of the question
         bool revealed;  // Answer revealed or not
@@ -69,7 +69,7 @@ contract CryptoQuiz {
         students[_studentAddress] = Student(true);
     }
 
-    function postQuestion(bytes32 _questionId, string memory _questionStr, bytes32 _publicKey) public onlyProfessor {
+    function postQuestion(bytes32 _questionId, string memory _questionStr, string memory _publicKey) public onlyProfessor {
         Question memory question = Question({
             questionId: _questionId,
             questionStr: _questionStr,
@@ -101,7 +101,7 @@ contract CryptoQuiz {
         question.answeredStudents[msg.sender] = true;
     }
 
-    function revealAnswer(bytes32 _questionId, uint _questionIndex, bytes32 _privateKey, bytes32 _trueAnswer) public onlyProfessor {
+    function revealAnswer(bytes32 _questionId, uint _questionIndex, string memory _privateKey, string memory _trueAnswer) public onlyProfessor {
         Question storage question = questions[_questionIndex];
         require(question.questionId == _questionId, "Different question.");
         require(!question.revealed, "Answer already revealed.");
@@ -115,18 +115,19 @@ contract CryptoQuiz {
     /**
         decryptedAnswers: professor should decrypt answers from students offline, and submit them here
         (Because it's too expensive to be computed on-chain)
+        @param answerJudgements bool[]: each student answered correctly or not
      */
-    function distributePoints(bytes32 _questionId, uint _questionIndex, bytes32[] memory decryptedAnswers) public onlyProfessor {
+    function distributePoints(bytes32 _questionId, uint _questionIndex, bool[] memory answerJudgements) public onlyProfessor {
         Question storage question = questions[_questionIndex];
 
         require(question.questionId == _questionId, "Different question.");
         require(question.revealed, "Answer not yet revealed.");
         require(!question.pointsDistributed, "Points already distributed.");
-        require(decryptedAnswers.length == question.answersCount, "Invalid decryptedAnswers.");
+        require(answerJudgements.length == question.answersCount, "Invalid answerJudgements.");
 
         // Send reward to students
         for (uint i = 0; i<question.answersCount; i++) {
-            if (decryptedAnswers[i] == question.trueAnswer) {
+            if (answerJudgements[i]) {
                 // Answered correctly
                 // Get ethereum address of students
                 address studentAddress = question.answers[i].byStudent;
