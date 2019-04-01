@@ -22,17 +22,19 @@ Tutorial: https://legacy.gitbook.com/book/carsonwah/dapp-tutorial/details
 
 Basic structure is based on https://truffleframework.com/boxes/pet-shop.
 
-### Useful Commands
+### Migrate smart contract
 
 ```bash
-truffle develop
-truffle compile
-truffle migrate
+truffle migrate --reset
+```
+
+### Run dev server
+
+```bash
 npm run dev
 ```
 
 ## Resources
-
 
 ### Cryptography
 
