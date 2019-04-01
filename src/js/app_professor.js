@@ -1,6 +1,7 @@
 App = {
     web3Provider: null,
     contracts: {},
+    questions: [],
   
     init: async function() {
       console.log("App initalization");
@@ -56,18 +57,27 @@ App = {
             window.location.href = 'index.html';
         }
         return CryptoQuizInstance.questionsCount();
-      }).then(function(questionsCount) {
-        App.questionIdCount = questionsCount.toNumber();
-        for(var i = 0; i < questionsCount; i++) {
-          CryptoQuizInstance.questions(i).then(function(question) {
-            var questionList = $("#questions-list");
-            var questionId = web3.toAscii(question[0]);
-            var questionStr = question[1];
-            var publicKey = question[2];
-            console.log("publicKey: " + publicKey);
-            var questionTemplate = '<tr><td style="overflow: scroll;">'+questionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target=".reveal-answer-modal">Reveal Answer</button></td></tr>';
-            questionList.append(questionTemplate);
-          });
+      }).then(async function(questionsCount) {
+        /**
+         * GET all questions from the chain 
+         */
+        App.nextQuestionId = questionsCount.toNumber();
+        for(let i = 0; i < questionsCount; i++) {
+          const question = await CryptoQuizInstance.questions(i)
+          let questionList = $("#questions-list");
+          let questionStr = question[1];
+          let publicKey = question[2];
+          let revealed = question[6];
+          console.log("publicKey: " + publicKey);
+          let questionTemplate = '<tr><td style="overflow: scroll;">'+i+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td>'
+          let revealBtn = '<button class="btn btn-success" type="button" data-toggle="modal" data-target="#reveal-answer-modal" data-id="'+i+'">Reveal Answer</button></td></tr>';
+          let detailsBtn = '<button class="btn btn-warning" type="button" data-toggle="modal" data-target="#details-modal" data-id="'+i+'">Details</button></td></tr>';
+          if (revealed) {
+            questionTemplate += detailsBtn;
+          } else {
+            questionTemplate += revealBtn;
+          }
+          questionList.append(questionTemplate);
         }
         loader.hide();
         content.show();
@@ -96,7 +106,7 @@ App = {
     postQuestion: function() {
       var newQuestion = $("#new-question");
       var questionList = $("#questions-list");
-      var questionId = web3.fromAscii(""+(++App.questionIdCount));
+      var questionId = web3.fromDecimal(App.nextQuestionId);
       var questionStr = newQuestion.val();
       var publicKey = "abcde";
 
@@ -105,7 +115,10 @@ App = {
         CryptoQuizInstance = instance;
         return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey);
       }).then(function(result) {
-        var questionTemplate = '<tr><td style="overflow: scroll;">'+App.questionIdCount+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target=".reveal-answer-modal">Reveal Answer</button></td></tr>';
+        var newQuestionId = web3.toDecimal(questionId);
+        console.log(questionId);
+        App.nextQuestionId++;
+        var questionTemplate = '<tr><td style="overflow: scroll;">'+newQuestionId+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td><button class="btn btn-success" type="button" data-toggle="modal" data-target="#reveal-answer-modal" data-id="'+newQuestionId+'">Reveal Answer</button></td></tr>';
         questionList.append(questionTemplate);
         newQuestion.val('');
         console.log("New Question Posted");
@@ -114,15 +127,86 @@ App = {
       });
     },
 
-    revealAnswer: function() {
-      console.log("revealAnswer()");
+    revealAnswer: function(questionIndex, pk, ans) {
+      // Reveal Answer
+      App.contracts.CryptoQuiz.deployed().then(function(instance) {
+        CryptoQuizInstance = instance;
+        var questionId = web3.fromDecimal(questionIndex);
+        var privateKey = web3.fromUtf8(pk);
+        var answer = web3.fromUtf8(ans);
+        // In this example we make the questionId == questionIndex
+        return CryptoQuizInstance.revealAnswer(questionId, questionIndex, privateKey, answer);
+      }).then(function(result) {
+        let modal = $("#reveal-answer-modal");
+        location.reload();
+      }).catch(function(error) {
+        console.log(error);
+      })
+    },
 
+    distributePt: function(questionIndex) {
+      // Distribute Points
+      console.log('distributePt()');
+      App.contracts.CryptoQuiz.deployed().then(function(instance) {
+        CryptoQuizInstance = instance;
+        return CryptoQuizInstance.questions(questionIndex);
+      }).then(function(question) {
+        console.log(question);
+        console.log(question[2].toString());
+      });
+
+    },
+
+    loadQuestionById: function(questionIndex) {
+      App.contracts.CryptoQuiz.deployed().then(function(instance) {
+        CryptoQuizInstance = instance;
+        return CryptoQuizInstance.questions(questionIndex);
+      }).then(function(question) {
+        let modal = $('#details-modal');
+        modal.find('#modal-private-key').val(web3.toUtf8(question[4]));
+        modal.find('#modal-answer').val(web3.toUtf8(question[5]));
+        modal.find('#numAns').html("Number of Answer: "+question[2].toNumber());
+        // Check points distributed
+        if (!question[7]) {
+          let btnGroup = modal.find('#btn-group');
+          let closeBtn = '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>';
+          let distributePtBtn = '<button type="button" class="btn btn-warning" id="btn-distribute">Distribute Points</button>';
+          btnGroup.empty();
+          btnGroup.append(closeBtn+distributePtBtn);
+          modal.find('#btn-distribute').click(function() {
+            App.distributePt(questionIndex);
+          })
+        }
+      }).catch(function(error) {
+        console.log(error);
+      });
     }
   };
   
   $(function() {
     $(window).load(function() {
       App.init();
+
+      // Reveal Answer Modal OnShow Handler
+      // https://getbootstrap.com/docs/3.3/javascript/#modals-related-target
+      $('#reveal-answer-modal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var questionIndex = button.data('id'); // Extract info from data-* attributes
+        var modal = $(this);
+        modal.find('#btn-submit').click(function() {
+          var privateKey = modal.find('#modal-private-key').val();
+          var answer = modal.find('#modal-answer').val();
+          App.revealAnswer(questionIndex, privateKey, answer);
+        })
+      });
+
+      // Deatils Modal OnShow Handler
+      // https://getbootstrap.com/docs/3.3/javascript/#modals-related-target
+      $('#details-modal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var questionIndex = button.data('id'); // Extract info from data-* attributes
+        App.loadQuestionById(questionIndex);
+      });
     });
   });
   
