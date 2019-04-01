@@ -66,9 +66,7 @@ App = {
           const question = await CryptoQuizInstance.questions(i)
           let questionList = $("#questions-list");
           let questionStr = question[1];
-          let publicKey = question[2];
           let revealed = question[6];
-          console.log("publicKey: " + publicKey);
           let questionTemplate = '<tr><td style="overflow: scroll;">'+i+'</td><td style="overflow-wrap: break-word;">'+questionStr+'</td><td>'
           let revealBtn = '<button class="btn btn-success" type="button" data-toggle="modal" data-target="#reveal-answer-modal" data-id="'+i+'">Reveal Answer</button></td></tr>';
           let detailsBtn = '<button class="btn btn-warning" type="button" data-toggle="modal" data-target="#details-modal" data-id="'+i+'">Details</button></td></tr>';
@@ -112,11 +110,13 @@ App = {
 
       var privateKey = eccrypto.generatePrivate();
       var publicKey = eccrypto.getPublic(privateKey);
+      var publicKey = web3.fromUtf8(publicKey.toString());
 
       // Post new question
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
-        return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey.toString());
+        console.log(questionId, questionStr, publicKey);
+        return CryptoQuizInstance.postQuestion(questionId, questionStr, publicKey);
       }).then(function(result) {
         var newQuestionId = web3.toDecimal(questionId);
         App.nextQuestionId++;
@@ -131,17 +131,15 @@ App = {
       });
     },
 
-    revealAnswer: function(questionIndex, pk, ans) {
+    revealAnswer: function(questionIndex, privateKey, ans) {
       // Reveal Answer
       App.contracts.CryptoQuiz.deployed().then(function(instance) {
         CryptoQuizInstance = instance;
         var questionId = web3.fromDecimal(questionIndex);
-        var privateKey = web3.fromUtf8(pk);
-        var answer = web3.fromUtf8(ans);
         // In this example we make the questionId == questionIndex
         return CryptoQuizInstance.revealAnswer(questionId, questionIndex, privateKey, answer);
       }).then(function(result) {
-        location.reload();
+        //location.reload();
       }).catch(function(error) {
         console.log(error);
       })
@@ -156,8 +154,8 @@ App = {
       }).then(function(question) {
         console.log(question);
         console.log(question[2].toString());
+        // console.log(question[])
       });
-
     },
 
     loadQuestionById: function(questionIndex) {

@@ -59,16 +59,13 @@ App = {
       for (let i = 0;  i< questionsCount; i++) 
       {
         const question = await CryptoQuizInstance.questions(i);
-        // .then(function (question) {
         var questionList = $("#questions-list");
-        var questionId = web3.toUtf8(question[0]);
         var questionStr = question[1];
         var questionPk = question[2];
         var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
-        var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+questionId+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-answer-'+questionId+'" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.submitAnswer('+i+')">Submit</button></span></div></div></div></div></div>';
+        var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+i+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-answer-'+i+'" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.submitAnswer('+i+')">Submit</button></span></div></div></div></div></div>';
         questionList.append(questionBoxTemplate);
         App.questions.push(question);
-        // });
       }
 
 
@@ -83,8 +80,8 @@ App = {
   submitAnswer: async function(questionIndex)
   {
     var question = App.questions[questionIndex];
-    var questionId = web3.toUtf8(question[0]);
-    var newAnswer = $("#new-answer-"+questionId);
+    var questionId = questionIndex;
+    var newAnswer = $("#new-answer-"+questionIndex);
     var answerStr = newAnswer.val();
     var CryptoQuizInstance;
 
@@ -92,12 +89,24 @@ App = {
     var randomNumber = parseInt((Math.random() * 100), 10).toString();
     var finalAnswer = answerStr+"//"+randomNumber;
     console.log("question: "+ question);
-    var publicKey = question[2];
+    var publicKey = question[3];
+    console.log(publicKey);
     console.log(finalAnswer);
-    console.log("public key: "+publicKey.toString);
+    console.log("public key: "+publicKey);
+
+    var publicKey = web3.toUtf8(question[3]);
+    console.log(publicKey);
+    var publicKey = Buffer.from(publicKey);
+    console.log(publicKey);
+
+    // var privateKeyA = eccrypto.generatePrivate();
+    // publicKey = eccrypto.getPublic(privateKeyA);
+    // console.log(privateKeyA);
+    // console.log(publicKey);
+
 
     const encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
-    const encryptedJSONString = Json.stringify(encrypted);
+    const encryptedJSONString = JSON.stringify(encrypted);
 
 
     // // // <TEMP>
