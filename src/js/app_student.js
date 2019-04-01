@@ -86,18 +86,21 @@ App = {
     var questionId = web3.toUtf8(question[0]);
     var newAnswer = $("#new-answer-"+questionId);
     var answerStr = newAnswer.val();
+    var CryptoQuizInstance;
 
     /* Encrypt Answer */
     var randomNumber = parseInt((Math.random() * 100), 10).toString();
     var finalAnswer = answerStr+"//"+randomNumber;
+    console.log("question: "+ question);
     var publicKey = question[2];
     console.log(finalAnswer);
+    console.log("public key: "+publicKey.toString);
 
-    const encrypted = await eccrypto.enrypt(publicKey, Buffer.from(finalAnswer));
+    const encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
     const encryptedJSONString = Json.stringify(encrypted);
 
 
-    // // <TEMP>
+    // // // <TEMP>
     // var privateKeyA = eccrypto.generatePrivate();
     // publicKey = eccrypto.getPublic(privateKeyA);
     // console.log('privateKeyA', web3.fromAscii(privateKeyA.toString()));
@@ -106,10 +109,10 @@ App = {
     // // </TEMP>
 
     // // Encrypt
-    // const encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
-    // console.log('encrypted', encrypted);
-    // const encryptedJSONString = JSON.stringify(encrypted);
-    // console.log('encryptedJSONString', encryptedJSONString);
+    // const temp_encrypted = await eccrypto.encrypt(publicKey, Buffer.from(finalAnswer));
+    // console.log('encrypted', temp_encrypted);
+    // const temp_encryptedJSONString = JSON.stringify(temp_encrypted);
+    // console.log('encryptedJSONString', temp_encryptedJSONString);
 
     // // Decrypt
     // const encryptedRecovered = JSON.parse(encryptedJSONString);
@@ -127,14 +130,15 @@ App = {
     // QuestionId == questionIndex in our example
 
     App.contracts.CryptoQuiz.deployed().then(function(instance) {
+      CryptoQuizInstance = instance;
+      CryptoQuizInstance.submitAnswer(questionId,questionIndex,encryptedJSONString);}
       .then(result => {
-        instance.submitAnswer(questionId,questionIndex,encryptedJSONString);
         console.log(result);
       })
       .catch(err => {
         console.warn(err);
       })
-    });
+    );
   }
 
   
