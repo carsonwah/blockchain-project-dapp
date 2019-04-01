@@ -62,10 +62,22 @@ App = {
         var questionList = $("#questions-list");
         var questionStr = question[1];
         var questionPk = question[2];
-        var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
-        var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+i+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-answer-'+i+'" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.submitAnswer('+i+')">Submit</button></span></div></div></div></div></div>';
-        questionList.append(questionBoxTemplate);
-        App.questions.push(question);
+        var questionRevealed = question[6];
+        console.log(question);
+        if (questionRevealed == true)
+        {
+          var correctAnswer = question[5];
+          var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+i+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><input type="text" class="form-control" id="modal-answer" placeholder='+correctAnswer+' readonly="readonly"></span></div></div></div></div></div>';
+          questionList.append(questionBoxTemplate);
+          App.questions.push(question);
+        }
+        else
+        {
+          var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
+          var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+'Question '+i+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-answer-'+i+'" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.submitAnswer('+i+')">Submit</button></span></div></div></div></div></div>';
+          questionList.append(questionBoxTemplate);
+          App.questions.push(question);
+        }
       }
 
 
