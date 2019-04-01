@@ -55,11 +55,18 @@ App = {
       if (questionsCount <= 0) {
         questionsTable.html("No questions yet!");
       }
-      for (var i = 1;  i<= questionsCount; i++) {
+      for (var i = 1;  i< questionsCount; i++) 
+      {
         CryptoQuizInstance.questions(i).then(function (question) {
-          console.log(question);
+          var questionList = $("#questions-list");
+          var questionId = web3.toAscii(question[0]);
+          var questionStr = question[1];
+          var questionTemplate = ' <tr><td style="overflow-wrap: break-word;">'+questionStr+'</td></tr>';
+          var questionBoxTemplate = '<div class="row"><div class="col-lg-12"><div class="panel panel-success"><div class="panel-heading">'+questionId+'</div><div class="panel-body" style="overflow-wrap: break-word;">'+questionStr+'</div><div class="panel-footer"><div class="input-group"><input type="text" class="form-control" id="new-question" placeholder="Your Answer"><span class="input-group-btn"><button class="btn btn-default" type="button" onclick="App.postQuestion()">Submit</button></span></div></div></div></div></div>';
+          questionList.append(questionBoxTemplate);
         });
       }
+
 
       loader.hide();
       content.show();
